@@ -1,0 +1,7 @@
+require File.expand_path('../ez_models/<%= table_name.tableize.singularize %>', __FILE__)
+
+# Please add your own methods to this class.
+# It's strongly recommended to check this file into your version control system.
+class <%= table_name.tableize.classify %> < EZModel::ActiveRecord::<%= table_name.tableize.classify %>
+
+end

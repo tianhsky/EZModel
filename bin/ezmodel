@@ -1,0 +1,165 @@
+lib = File.expand_path("../../lib/", __FILE__)
+$LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
+
+require "yaml"
+require "optparse"
+require "erubis"
+require "ez_model"
+require "rmre"
+
+########################################################################################################
+# get options from user input
+########################################################################################################
+options = {:db => {}}
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: ezmodel -g [options]"
+
+  options[:generate] = false
+  opts.on("-g", "--generate", "Generate models") do
+    options[:generate] = true
+  end
+
+  options[:overwrite] = false
+  opts.on("-o", "--overwrite",
+          "Overwrite models files (back up your models in '~app/models/' before you do so, use it at your own risk)") do
+    options[:overwrite] = true
+  end
+
+  options[:dbconfig] = "config/database.yml"
+  opts.on("-d", "--dbconfig [PATH]",
+          "the path to db config file (default 'config/database.yml')") do |e|
+    options[:environment] = e unless e.nil?
+  end
+
+  options[:environment] = "development"
+  opts.on("-e", "--environment [ENVIRONMENT]",
+          "from which db config you want to choose, choose from 'development/test/production' (default 'development')") do |e|
+    options[:environment] = e unless e.nil?
+  end
+
+  opts.on("-h", "--help", "Display this help screen") do
+    puts opts
+    exit
+  end
+
+  opts.on("-v", "--version", "Show version") do |v|
+    puts "rmre version #{Rmre::VERSION} (modified)"
+    puts "ezmodel version #{EZModel::VERSION}"
+    exit
+  end
+
+
+end
+
+########################################################################################################
+# parse options
+########################################################################################################
+begin
+  optparse.parse!
+rescue OptionParser::ParseError => pe
+  puts pe.message
+  puts optparse
+  exit
+end
+
+
+if (options[:generate].nil? || options[:generate] == false)
+  puts "Required action is not specified"
+  puts optparse
+  exit
+end
+
+
+########################################################################################################
+# setup options
+########################################################################################################
+d_environment = options[:environment].downcase
+
+rails_root_path = Dir.pwd + "/"
+
+puts "Loading db config..."
+db_config_path = rails_root_path + options[:dbconfig]
+db_config = YAML::load(File.open(db_config_path))
+puts "from #{db_config_path}..."
+
+options[:db].merge!(:adapter => db_config[d_environment]["adapter"])
+options[:db].merge!(:database => db_config[d_environment]["database"])
+options[:db].merge!(:username => db_config[d_environment]["username"])
+options[:db].merge!(:password => db_config[d_environment]["password"])
+options[:db].merge!(:host => db_config[d_environment]["host"])
+options[:db].merge!(:port => db_config[d_environment]["port"])
+options[:db][:timeout] = 5000
+options[:dump_schema] = rails_root_path + "db/schema.rb"
+options[:out_path] = rails_root_path + "app/models/ez_models/"
+options[:model_path] = rails_root_path + "app/models/"
+
+########################################################################################################
+# generate ez_models using external rmre
+# require rmre installed, please use the built-in one instead
+########################################################################################################
+
+=begin
+cmd = ` rmre \
+        -a #{options[:db][:adapter]} \
+        -d #{options[:db][:database]} \
+        -u #{options[:db][:username]} \
+        -p #{options[:db][:password]} \
+        --host #{options[:db][:host]} \
+        --port #{options[:db][:port]} \
+        --out #{options[:out_path]} \
+        --dump-schema #{options[:dump_schema]} \
+
+        `
+puts cmd
+=end
+
+
+########################################################################################################
+# generate ez_models using built-in rmre(modified)
+# does not require rmre installed
+# added mysql2 support and improved model structure
+########################################################################################################
+
+FileUtils.mkdir_p options[:out_path] unless File.exist? options[:out_path]
+
+options = YAML.load_file(options[:file]) if options[:file] && File.exists?(options[:file])
+
+unless options[:db][:adapter]
+  puts "Missing required arguments -d (--dbconfig) and -e (--environment)"
+  puts optparse
+  exit
+end
+
+generator = Rmre::Generator.new(options[:db], options[:out_path], options[:include])
+
+begin
+  generator.connect
+rescue Exception => e
+  puts e.message
+  exit
+end
+
+if options[:dump_schema]
+  _backup_schema_file = options[:dump_schema]+".bak"
+  if(File.exists?(options[:dump_schema]))
+     puts "Backing up schema file to #{_backup_schema_file}"
+     File.rename(options[:dump_schema], _backup_schema_file)
+  end
+  puts "Dumping schema to #{options[:dump_schema]}..."
+  File.open(options[:dump_schema], 'w') do |file|
+    generator.dump_schema(file)
+  end
+end
+
+puts "Generating base models in #{options[:out_path]}..."
+generator.create_models(generator.connection.tables)
+
+########################################################################################################
+# generate models
+########################################################################################################
+
+puts "Generating models in #{options[:model_path]}..."
+EZModel::Generator.CreateModels(options[:model_path], generator.connection.tables, options[:overwrite])
+
+puts "Congratulations, your schema.rb and all of your models have been generated"
+puts "Feel free to customize your model in ~/app/models/"

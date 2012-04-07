@@ -1,0 +1,24 @@
+# This file is auto-generated from the current state of the database registered
+# in ~config/database.yml. Instead of editing this file, please go to ~/app/models/
+# and find the file with same name and class that inherits this class
+module EZModel
+    module ActiveRecord
+        class <%= table_name.tableize.classify %> < ActiveRecord::Base
+          <% unless table_name == table_name.tableize %>
+            <%= "set_table_name '#{table_name}'" + "\n" -%>
+          <% end %>
+
+          <% unless "id" == primary_key || primary_key.nil? %>
+            <%= "set_primary_key :#{primary_key}" + "\n" -%>
+          <% end %>
+
+          <% if has_type_column %>
+            <%= "set_inheritance_column :ruby_type" + "\n" -%>
+          <% end %>
+
+          <% constraints.each do |constraint| %>
+            <%= constraint + "\n" -%>
+          <% end %>
+        end
+    end
+end

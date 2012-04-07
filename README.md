@@ -8,8 +8,8 @@ It uses [Rmre](https://github.com/bosko/rmre "Rmre") as underlying reverse engin
 ####1. Setup database server, mysql is suggested;
 
 ####2. Setup database schema, if you already have a database set up, skip this step;
-	- there are many tools can be use for database design, you can then export scripts to generate db schema;
-	- checkout mysql-workbench and its forward-engineering feature for more details about designing ER diagram and generate schema; 
+there are many tools can be use for database design, you can then export scripts to generate db schema;   
+checkout mysql-workbench and its forward-engineering feature for more details about designing ER diagram and generate schema;    
 
 ####3. Prepare ~/config/database.yml, here is a sample:   
 

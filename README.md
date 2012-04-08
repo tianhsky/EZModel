@@ -1,5 +1,5 @@
 # EZModel
-Generate models and schema.rb from existing database just in one command line. If you prefer design ER diagram and export scripts to generate database schema, or if you have to work with a legacy database, this can save you insame amount of time. All you need to do is to have a database.yml configuraiton file in ~/config/. Besides creating all models it sets proper table name and primary key if tables and columns naming doesn’t follow Rails convention. It also tries to read all foreign keys data from a database.     
+Generate models and schema.rb from existing database just in one command line. If you prefer design ER diagram and export scripts to generate database schema, or if you have to work with a legacy database, this can save you insane amount of time. All you need to do is to have a database.yml configuraiton file in ~/config/. Besides creating all models it sets proper table name and primary key if tables and columns naming doesn’t follow Rails convention. It also tries to read all foreign keys data from a database.     
 
 It uses [Rmre](https://github.com/bosko/rmre "Rmre") as underlying reverse engine to generate models. I made some modifications to Rmre to support mysql2 adapter, and had those auto-generated model files placed in a subfolder inside ~/app/models/ez_models/ instead of the default ~/app/models/, so that regenerating models will not overwrite the existing ones. Over the times, db schema can ge changed, all it needs is to run the command again to regenerate models, developers can feel free to add methods to the models classes in ~/app/models/ without worrying about being overwritten.
 
@@ -39,22 +39,25 @@ checkout mysql-workbench and its forward-engineering feature for more details ab
 		socket: /var/run/mysqld/mysqld.sock
 
 ###Generate models
-	# generate model files
-	# it will take development as default db environment when environment is not specified  
+cd to rails root directory
+	cd /path_to_rails_root
+
+generate model files   
+it will take development as default db environment when environment is not specified     
 	ezmodel -g
-	#or
+or   
 	ezmodel -g -e development
 
-	# generate model files and overwrite existing ones in ~/app/models/
-	# use this command only if the model files in ~/app/models/ don't inherit EZModel::ActiveRecord 
-	# backup your models files is strongly suggested if you are not sure what it is doing
-	# use it at your own risk
+generate model files and overwrite existing ones in ~/app/models/   
+use this command only if the model files in ~/app/models/ don't inherit EZModel::ActiveRecord    
+backup your models files is strongly suggested if you are not sure what it is doing   
+use it at your own risk   
 	ezmodel -g -o
 
-	# see help
+see help   
 	ezmodel -h
 
-	# see version
+see version   
 	ezmodel -v
 
 ## Installation

@@ -39,25 +39,31 @@ checkout mysql-workbench and its forward-engineering feature for more details ab
 		socket: /var/run/mysqld/mysqld.sock
 
 ###Generate models
-cd to rails root directory
+cd to rails root directory   
+
 	cd /path_to_rails_root
 
 generate model files   
-it will take development as default db environment when environment is not specified     
+it will take development as default db environment when environment is not specified  
+   
 	ezmodel -g
 or   
+
 	ezmodel -g -e development
 
 generate model files and overwrite existing ones in ~/app/models/   
 use this command only if the model files in ~/app/models/ don't inherit EZModel::ActiveRecord    
 backup your models files is strongly suggested if you are not sure what it is doing   
 use it at your own risk   
+
 	ezmodel -g -o
 
 see help   
+
 	ezmodel -h
 
 see version   
+
 	ezmodel -v
 
 ## Installation

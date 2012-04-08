@@ -7,7 +7,7 @@ It uses [Rmre](https://github.com/bosko/rmre "Rmre") as underlying reverse engin
 ## How it works
 First let's take a look at what it does.
 
-In ~/app/models/ez_models/, it will generate model files that inherits ActiveRecord::Base    
+In ~/app/models/ez_models/, it will generate model files inherit ActiveRecord::Base    
 
 ~/app/models/ez_models/billing_info.rb
 
@@ -39,13 +39,11 @@ In ~/app/models/, it will generate same model files and inherit the above classe
 
 ## How to use it
 ###Prerequisite
-####1. Setup database server, mysql is suggested;
-
-####2. Setup database schema, if you already have a database set up, skip this step;
+####1. Setup database schema, if you already have a database set up, skip this step;
 there are many tools can be use for database design, you can then export scripts to generate db schema;   
 checkout mysql-workbench and its forward-engineering feature for more details about designing ER diagram and generate schema;    
 
-####3. Prepare ~/config/database.yml, here is a sample:   
+####2. Prepare ~/config/database.yml, here is a sample:   
 
 	development:
 		adapter: mysql2
@@ -105,7 +103,7 @@ see version
 
 See here for more details: [http://rubygems.org/gems/ez_model](http://rubygems.org/gems/ez_model "EZModel RubyGem Page")   
 
-## Author
+## Authors
 Tianyu Huang   
 The reverse engine for generating models was created by Bosko Ivanisevic, check out https://github.com/bosko/rmre for details
 

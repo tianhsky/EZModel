@@ -16,7 +16,7 @@ In ~/app/models/ez_models/, it will generate model files inherit ActiveRecord::B
 	# and find the file with same name and class that inherits this class
 	module EZModel
 	    module ActiveRecord
-		class BillingInfo < ActiveRecord::Base
+		class BillingInfo < ::ActiveRecord::Base
 		    belongs_to :users, :class_name => 'User', :foreign_key => :user_id
 		    belongs_to :invoices, :class_name => 'Invoice', :foreign_key => :invoice_id
 		    has_many :chargebacks, :class_name => 'Chargeback'

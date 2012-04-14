@@ -3,7 +3,7 @@
 # and find the file with same name and class that inherits this class
 module EZModel
     module ActiveRecord
-        class <%= table_name.tableize.classify %> < ActiveRecord::Base
+        class <%= table_name.tableize.classify %> < ::ActiveRecord::Base
           <% unless table_name == table_name.tableize %>
             <%= "set_table_name '#{table_name}'" + "\n" -%>
           <% end %>

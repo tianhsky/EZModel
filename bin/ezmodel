@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 lib = File.expand_path("../../lib/", __FILE__)
 $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 
@@ -12,7 +13,7 @@ require "rmre"
 ########################################################################################################
 options = {:db => {}}
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: ezmodel -g [options]"
+  opts.banner = "Usage: ezmodel -g [-o] [-d PATH] [-e ENVIRONMENT]"
 
   options[:generate] = false
   opts.on("-g", "--generate", "Generate models") do
@@ -21,18 +22,18 @@ optparse = OptionParser.new do |opts|
 
   options[:overwrite] = false
   opts.on("-o", "--overwrite",
-          "Overwrite models files (back up your models in '~app/models/' before you do so, use it at your own risk)") do
+          "Overwrite model files (before you do so, back up your models in '~app/models/')") do
     options[:overwrite] = true
   end
 
   options[:dbconfig] = "config/database.yml"
-  opts.on("-d", "--dbconfig [PATH]",
+  opts.on("-d", "--dbconfig PATH",
           "the path to db config file (default 'config/database.yml')") do |e|
     options[:environment] = e unless e.nil?
   end
 
   options[:environment] = "development"
-  opts.on("-e", "--environment [ENVIRONMENT]",
+  opts.on("-e", "--environment ENVIRONMENT",
           "from which db config you want to choose, choose from 'development/test/production' (default 'development')") do |e|
     options[:environment] = e unless e.nil?
   end
@@ -44,7 +45,7 @@ optparse = OptionParser.new do |opts|
 
   opts.on("-v", "--version", "Show version") do |v|
     puts "rmre version #{Rmre::VERSION} (modified)"
-    puts "ezmodel version #{EZModel::VERSION}"
+    puts "ezmodel(aka:ez_model) version #{EZModel::VERSION}"
     exit
   end
 

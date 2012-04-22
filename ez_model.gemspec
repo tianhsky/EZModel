@@ -1,6 +1,7 @@
 lib = File.expand_path("../lib/", __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
+require "date"
 require "ez_model/version"
 require "rmre/version"
 
@@ -10,7 +11,7 @@ Gem::Specification.new do |s|
   s.name = "ez_model"
   s.version = ::EZModel::VERSION
   s.platform = Gem::Platform::RUBY
-  s.date = "2012-04-16"
+  s.date = Date.today.to_s
   s.summary = "Automatically generate model files from database."
   s.description = "Automatically generate model files from database."
 
@@ -29,8 +30,5 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.executables = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   s.extra_rdoc_files = ["README.md", "LICENSE"]
-  
-  
-
 
 end

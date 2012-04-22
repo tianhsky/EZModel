@@ -1,5 +1,3 @@
-
-class <%= table_name.tableize.classify %> < ActiveRecord::Base
     ##########BEGIN-EZMODEL-AUTO-GENERATED-SECTION##########
     <% unless table_name == table_name.tableize %>
     <%= "set_table_name '#{table_name}'" + "\n" -%>
@@ -14,6 +12,3 @@ class <%= table_name.tableize.classify %> < ActiveRecord::Base
     <%= constraint + "\n" -%>
     <% end %>
     ##########END-EZMODEL-AUTO-GENERATED-SECTION##########
-
-
-end

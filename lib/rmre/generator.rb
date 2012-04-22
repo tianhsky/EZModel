@@ -10,6 +10,9 @@ module Rmre
 
     SETTINGS_ROOT = File.expand_path('../../../../db', __FILE__)
 
+    BEGIN_TAG = "##########BEGIN-EZMODEL-AUTO-GENERATED-SECTION##########"
+    END_TAG = "##########END-EZMODEL-AUTO-GENERATED-SECTION##########"
+
     def initialize(options, out_path, include)
       @connection_options = options
       @connection = nil
@@ -39,16 +42,72 @@ module Rmre
     end
 
     def create_model(table_name)
-      File.open(File.join(output_path, "#{table_name.tableize.singularize}.rb"), "w") do |file|
-        constraints = []
+      constraints = []
 
-        foreign_keys.each do |fk|
-          src = constraint_src(table_name, fk)
-          constraints << src unless src.nil?
+      foreign_keys.each do |fk|
+        src = constraint_src(table_name, fk)
+        constraints << src unless src.nil?
+      end
+
+      _file_path = File.join(output_path, "#{table_name.tableize.singularize}.rb")
+      if (!File.exists?(_file_path))
+        content = generate_model_source(table_name, constraints)
+      else
+
+        # read file content
+        file = File.open(_file_path, "r+")
+        content = ""
+        line_begin = -1
+        line_end = -1
+        i = -1
+        while (!file.eof?)
+          i = i+1
+          _line = file.readline
+
+          # remove old code
+          if (_line.include?(table_name.tableize.classify) &&
+              _line.include?("EZModel::ActiveRecord"))
+            _line = "class #{table_name.tableize.classify} < ActiveRecord::Base \n"
+          end
+
+          if (_line.include?(BEGIN_TAG))
+            line_begin = i
+          end
+          if (_line.include?(END_TAG))
+            line_end = i
+          end
+
+          content += _line
+        end
+        file.close()
+
+        # remove auto generated code
+        if (line_begin<line_end)
+          content = content.gsub(/#{BEGIN_TAG}(.*)#{END_TAG}/im, "")
         end
 
-        file.write generate_model_source(table_name, constraints)
+        _text = content
+        content = ""
+        _text.split("\n").each do |_line|
+
+          # remove include header from old version
+          unless (_line.include?("require File.expand_path('../ez_models"))
+            content += _line + "\n"
+          end
+
+          # add auto-gen code below class
+          if (_line.include?(table_name.tableize.classify) &&
+              _line.include?("ActiveRecord::Base"))
+            _body = generate_model_content(table_name, constraints)
+            content += _body + "\n"
+          end
+        end
       end
+
+      File.open(_file_path, "w") do |file|
+        file.write(content)
+      end
+
     end
 
     def process?(table_name)
@@ -69,16 +128,16 @@ module Rmre
     def fetch_foreign_keys
       fk = []
       case @connection_options[:adapter].downcase
-      when 'mysql'
-        fk = mysql_foreign_keys
-      when 'mysql2'
-        fk = mysql_foreign_keys
-      when 'postgresql'
-        fk = psql_foreign_keys
-      when 'sqlserver'
-        fk = mssql_foreign_keys
-      when 'oracle_enhanced'
-        fk = oracle_foreign_keys
+        when 'mysql'
+          fk = mysql_foreign_keys
+        when 'mysql2'
+          fk = mysql_foreign_keys
+        when 'postgresql'
+          fk = psql_foreign_keys
+        when 'sqlserver'
+          fk = mssql_foreign_keys
+        when 'oracle_enhanced'
+          fk = oracle_foreign_keys
       end
       fk
     end
@@ -96,10 +155,19 @@ module Rmre
     def generate_model_source(table_name, constraints)
       eruby = Erubis::Eruby.new(File.read(File.join(File.expand_path("../", __FILE__), 'model.eruby')))
       eruby.result(
-        :table_name => table_name,
-        :primary_key => connection.primary_key(table_name),
-        :constraints => constraints,
-        :has_type_column => connection.columns(table_name).find { |col| col.name == 'type' })
+          :table_name => table_name,
+          :primary_key => connection.primary_key(table_name),
+          :constraints => constraints,
+          :has_type_column => connection.columns(table_name).find { |col| col.name == 'type' })
+    end
+
+    def generate_model_content(table_name, constraints)
+      eruby = Erubis::Eruby.new(File.read(File.join(File.expand_path("../", __FILE__), 'content.eruby')))
+      eruby.result(
+          :table_name => table_name,
+          :primary_key => connection.primary_key(table_name),
+          :constraints => constraints,
+          :has_type_column => connection.columns(table_name).find { |col| col.name == 'type' })
     end
 
     def mysql_foreign_keys
@@ -113,7 +181,7 @@ from information_schema.KEY_COLUMN_USAGE
 where referenced_table_schema like '%'
  and constraint_schema = '#{@connection_options[:database]}'
  and referenced_table_name is not null
-SQL
+      SQL
       connection.select_all(sql)
     end
 
@@ -139,7 +207,7 @@ SELECT tc.table_name as from_table,
       AND rc.unique_constraint_name = ccu.constraint_name
     WHERE tc.table_name like '%'
     AND tc.constraint_type = 'FOREIGN KEY';
-SQL
+      SQL
       connection.select_all(sql)
     end
 
@@ -164,7 +232,7 @@ FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
             AND C2.CONSTRAINT_NAME = KCU2.CONSTRAINT_NAME
             AND KCU.ORDINAL_POSITION = KCU2.ORDINAL_POSITION
     WHERE  C.CONSTRAINT_TYPE = 'FOREIGN KEY'
-SQL
+      SQL
       connection.select_all(sql)
     end
 
@@ -172,10 +240,10 @@ SQL
       fk = []
       connection.tables.each do |table|
         connection.foreign_keys(table).each do |oracle_fk|
-          table_fk = { 'from_table' => oracle_fk.from_table,
-            'from_column' => oracle_fk.options[:columns][0],
-            'to_table' => oracle_fk.to_table,
-            'to_column' => oracle_fk.options[:references][0] }
+          table_fk = {'from_table' => oracle_fk.from_table,
+                      'from_column' => oracle_fk.options[:columns][0],
+                      'to_table' => oracle_fk.to_table,
+                      'to_column' => oracle_fk.options[:references][0]}
           fk << table_fk
         end
       end

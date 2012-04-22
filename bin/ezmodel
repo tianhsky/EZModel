@@ -5,6 +5,7 @@ $LOAD_PATH.unshift lib unless $LOAD_PATH.include?(lib)
 require "yaml"
 require "optparse"
 require "erubis"
+require "fileutils"
 require "ez_model"
 require "rmre"
 
@@ -20,11 +21,13 @@ optparse = OptionParser.new do |opts|
     options[:generate] = true
   end
 
+=begin
   options[:overwrite] = false
   opts.on("-o", "--overwrite",
           "Overwrite model files (before you do so, back up your models in '~app/models/')") do
     options[:overwrite] = true
   end
+=end
 
   options[:dbconfig] = "config/database.yml"
   opts.on("-d", "--dbconfig PATH",
@@ -91,8 +94,9 @@ options[:db].merge!(:host => db_config[d_environment]["host"])
 options[:db].merge!(:port => db_config[d_environment]["port"])
 options[:db][:timeout] = 5000
 options[:dump_schema] = rails_root_path + "db/schema.rb"
-options[:out_path] = rails_root_path + "app/models/ez_models/"
+options[:out_path] = rails_root_path + "app/models/"
 options[:model_path] = rails_root_path + "app/models/"
+options[:old_model_path] = rails_root_path + "app/models/ez_models/"
 
 ########################################################################################################
 # generate ez_models using external rmre
@@ -142,9 +146,9 @@ end
 
 if options[:dump_schema]
   _backup_schema_file = options[:dump_schema]+".bak"
-  if(File.exists?(options[:dump_schema]))
-     puts "Backing up schema file to #{_backup_schema_file}"
-     File.rename(options[:dump_schema], _backup_schema_file)
+  if (File.exists?(options[:dump_schema]))
+    puts "Backing up schema file to #{_backup_schema_file}"
+    File.rename(options[:dump_schema], _backup_schema_file)
   end
   puts "Dumping schema to #{options[:dump_schema]}..."
   File.open(options[:dump_schema], 'w') do |file|
@@ -152,15 +156,17 @@ if options[:dump_schema]
   end
 end
 
-puts "Generating base models in #{options[:out_path]}..."
+puts "Generating models in #{options[:out_path]}..."
 generator.create_models(generator.connection.tables)
 
 ########################################################################################################
 # generate models
 ########################################################################################################
 
-puts "Generating models in #{options[:model_path]}..."
-EZModel::Generator.CreateModels(options[:model_path], generator.connection.tables, options[:overwrite])
+#puts "Generating models in #{options[:model_path]}..."
+#EZModel::Generator.CreateModels(options[:model_path], generator.connection.tables, options[:overwrite])
 
-puts "Congratulations, your schema.rb and all of your models have been generated"
-puts "Feel free to customize your model in ~/app/models/"
+# remove old base model
+FileUtils.rm_rf(options[:old_model_path]) if Dir.exists?(options[:old_model_path])
+
+puts "Congratulations, your schema.rb and models have been generated"

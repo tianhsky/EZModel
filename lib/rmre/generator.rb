@@ -44,10 +44,10 @@ module Rmre
     def create_model(table_name)
       constraints = []
 
-      foreign_keys.each do |fk|
-        src = constraint_src(table_name, fk)
-        constraints << src unless src.nil?
-      end
+      #foreign_keys.each do |fk|
+      #  src = constraint_src(table_name, fk)
+      #  constraints << src unless src.nil?
+      #end
 
       _file_path = File.join(output_path, "#{table_name.tableize.singularize}.rb")
       if (!File.exists?(_file_path))
@@ -145,7 +145,7 @@ module Rmre
     def constraint_src(table_name, fk={})
       src = nil
       if fk['from_table'] == table_name
-        src = "belongs_to :#{fk['to_table'].downcase}, :class_name => '#{fk['to_table'].tableize.classify}', :foreign_key => :#{fk['from_column']}"
+        src = "belongs_to :#{fk['to_table'].downcase.singularize}, :class_name => '#{fk['to_table'].tableize.classify}', :foreign_key => :#{fk['from_column']}"
       elsif fk['to_table'] == table_name
         src = "has_many :#{fk['from_table'].downcase.pluralize}, :class_name => '#{fk['from_table'].tableize.classify}'"
       end

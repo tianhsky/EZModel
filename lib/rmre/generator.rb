@@ -44,10 +44,10 @@ module Rmre
     def create_model(table_name)
       constraints = []
 
-      #foreign_keys.each do |fk|
-      #  src = constraint_src(table_name, fk)
-      #  constraints << src unless src.nil?
-      #end
+      foreign_keys.each do |fk|
+        src = constraint_src(table_name, fk)
+        constraints << src unless src.nil?
+      end
 
       _file_path = File.join(output_path, "#{table_name.tableize.singularize}.rb")
       if (!File.exists?(_file_path))

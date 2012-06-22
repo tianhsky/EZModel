@@ -1,3 +1,3 @@
 module EZModel
-  VERSION = "1.0.8" unless defined?(::EZModel::VERSION)
+  VERSION = "1.0.9" unless defined?(::EZModel::VERSION)
 end
